@@ -11,11 +11,11 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from collections import Counter
 from random import shuffle
-from transformers import AutoTokenizer, AutoModel
+from transformers import DistilBertTokenizer, DistilBertModel
+from tensorflow.keras.optimizers import Adam
+from sklearn.utils.class_weight import compute_class_weight
 
 
-
-# Modified tensorflow bilstm for sentence-level prediction
 
 #VECTOR_DIM = 1024
 VECTOR_DIM = 768 # bert
@@ -25,7 +25,7 @@ MAX_SEQUENCE_LEN = 50
 #                      '../test_datasets/classes_elmo_2.txt']
 #IN_FILENAMES_TEST = ['../test_datasets/classes_elmo_3.txt']
 IN_FILENAMES_TRAIN = [r'E:\\FERI\\Magisterij\\JEZ TEH\SV\\analiza-sentimenta-idiomov\\test_datasets\\classes_elmo_1_20.txt']
-                     # r'E:\\FERI\\Magisterij\\JEZ TEH\SV\\analiza-sentimenta-idiomov\\test_datasets\\classes_elmo_2.txt']
+                      #r'E:\\FERI\\Magisterij\\JEZ TEH\SV\\analiza-sentimenta-idiomov\\test_datasets\\classes_elmo_2.txt']
 IN_FILENAMES_TEST = [r'E:\\FERI\\Magisterij\\JEZ TEH\SV\\analiza-sentimenta-idiomov\\test_datasets\\classes_elmo_1_20.txt']
 #IN_FILENAME = '../vector_datasets/vectors_with_classes_elmo_slo_top_full.txt'
 #IN_FILENAME = '../vector_datasets/vectors_with_classes_elmo_slo_200k.txt'
@@ -181,7 +181,11 @@ def bert_tensorflow_test(X_train, X_test, Y_train, Y_test):
         classes.append(cls)
     print(Counter(classes))
 
-    model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+    #y_integers = np.argmax(Y_train, axis=1)
+    #class_weights = compute_class_weight('balanced', classes=np.unique(y_integers), y=y_integers)
+    #class_weight_dict = dict(enumerate(class_weights))
+
+    model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
     print('compiled model')
     model.fit(X_train, Y_train, batch_size=4, epochs=2, validation_split=0.0)
     print('fit model')
@@ -260,8 +264,8 @@ def get_already_processed(filename):
 #X_train, X_test, Y_train, Y_test = get_bert_data(IN_FILENAME, None)
 #bert_tensorflow_test(X_train, X_test, Y_train, Y_test)
 #tf.disable_v2_behavior()
-model = AutoModel.from_pretrained("EMBEDDIA/crosloengual-bert")
-tokenizer = AutoTokenizer.from_pretrained("EMBEDDIA/crosloengual-bert")
+tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-multilingual-cased')
+model = DistilBertModel.from_pretrained('distilbert-base-multilingual-cased')
 print('model loaded ok')
 
 
